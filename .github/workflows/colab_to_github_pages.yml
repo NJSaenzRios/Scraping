@@ -1,0 +1,47 @@
+name: Convertir HTML a GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # El flujo de trabajo se ejecutará cada vez que haya un push a la rama principal.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Ejecutamos el flujo en un contenedor de Ubuntu.
+
+    steps:
+    # Paso 1: Hacer checkout del repositorio
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Paso 2: Instalar dependencias necesarias
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'  # Instala Python (si lo necesitas).
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install nbconvert  # Instala nbconvert para convertir notebooks a HTML.
+        pip install jupyter  # Instala Jupyter si necesitas ejecutar el notebook.
+
+    # Paso 3: Convertir el archivo de Colab a HTML (si es necesario)
+    # Este paso es opcional si ya tienes el archivo HTML generado.
+    - name: Convertir notebook a HTML
+      run: |
+        jupyter nbconvert --to html Saenz_Johana_Analizando_EA1.ipynb  # Convierte el notebook a HTML.
+
+    # Paso 4: Mover el archivo HTML a la carpeta docs (GitHub Pages usa esta carpeta)
+    - name: Mover HTML a docs
+      run: |
+        mv mercado_libre_data.html docs/index.html  # Mueve tu HTML a la carpeta docs como index.html.
+
+    # Paso 5: Hacer commit y push del archivo HTML a GitHub Pages
+    - name: Commit y push del archivo HTML a GitHub Pages
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add docs/index.html
+        git commit -m "Actualizar index.html desde Colab"
+        git push
